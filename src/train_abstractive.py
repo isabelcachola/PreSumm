@@ -270,6 +270,7 @@ def train_abs(args, device_id):
     if (args.world_size > 1):
         train_abs_multi(args)
     else:
+        print("TRAIN ABS SINGLE")
         train_abs_single(args, device_id)
 
 
@@ -277,6 +278,7 @@ def train_abs_single(args, device_id):
     init_logger(args.log_file)
     logger.info(str(args))
     device = "cpu" if args.visible_gpus == '-1' else "cuda"
+    print(f'DEVICE = {device}')
     logger.info('Device ID %d' % device_id)
     logger.info('Device %s' % device)
     torch.manual_seed(args.seed)

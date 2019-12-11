@@ -126,6 +126,7 @@ def validate_ext(args, device_id):
             cp_files = sorted(glob.glob(os.path.join(args.model_path, 'model_step_*.pt')))
             cp_files.sort(key=os.path.getmtime)
             if (cp_files):
+                # print(cp_files)
                 cp = cp_files[-1]
                 time_of_cp = os.path.getmtime(cp)
                 if (not os.path.getsize(cp) > 0):
@@ -134,6 +135,7 @@ def validate_ext(args, device_id):
                 if (time_of_cp > timestep):
                     timestep = time_of_cp
                     step = int(cp.split('.')[-2].split('_')[-1])
+                    print('validating')
                     validate(args, device_id, cp, step)
                     test_ext(args, device_id, cp, step)
 
@@ -145,6 +147,7 @@ def validate_ext(args, device_id):
                 if (time_of_cp > timestep):
                     continue
             else:
+                print('sleeping...')
                 time.sleep(300)
 
 
@@ -200,6 +203,7 @@ def train_ext(args, device_id):
     if (args.world_size > 1):
         train_multi_ext(args)
     else:
+        #print('here1')
         train_single_ext(args, device_id)
 
 
@@ -235,11 +239,12 @@ def train_single_ext(args, device_id):
     def train_iter_fct():
         return data_loader.Dataloader(args, load_dataset(args, 'train', shuffle=True), args.batch_size, device,
                                       shuffle=True, is_test=False)
-
+    #print('here2')
     model = ExtSummarizer(args, device, checkpoint)
     optim = model_builder.build_optim(args, model, checkpoint)
 
     logger.info(model)
 
     trainer = build_trainer(args, device_id, model, optim)
+    #print('here')
     trainer.train(train_iter_fct, args.train_steps)
