@@ -8,12 +8,14 @@ from torch.nn.init import xavier_uniform_
 from models.decoder import TransformerDecoder
 from models.encoder import Classifier, ExtTransformerEncoder
 from models.optimizers import Optimizer
+from collections import OrderedDict
+from os.path import join
 
 def build_optim(args, model, checkpoint):
     """ Build optimizer """
 
-    if checkpoint is not None:
-        optim = checkpoint['optim'][0]
+    if checkpoint is not None and 'optim' in checkpoint:
+        optim = checkpoint['optim']
         saved_optimizer_state_dict = optim.optimizer.state_dict()
         optim.optimizer.load_state_dict(saved_optimizer_state_dict)
         if args.visible_gpus != '-1':
@@ -113,9 +115,23 @@ def get_generator(vocab_size, dec_hidden_size, device):
     return generator
 
 class Bert(nn.Module):
-    def __init__(self, large, temp_dir, finetune=False):
+    def __init__(self, large, temp_dir, finetune=False, from_pretrained=None):
         super(Bert, self).__init__()
-        if(large):
+        if from_pretrained:
+            # key_transformation = lambda x: x.split('.',1)[1] if x.split('.',1)[0] == 'roberta' else x
+            # state_dict = torch.load(join(from_pretrained, 'pytorch_model.bin'))
+            # new_state_dict = OrderedDict()
+            # for key, value in state_dict.items():
+            #     new_key = key_transformation(key)
+            #     new_state_dict[new_key] = value
+            # print(new_state_dict)
+            # torch.save(new_state_dict,join(from_pretrained, 'pytorch_model.bin'))
+            config = BertConfig(join(from_pretrained, 'config.json'))
+            self.model = BertModel(config)
+            model_state_dict = join(from_pretrained, "pytorch_model-0234.bin")
+            self.model.load_state_dict(torch.load(model_state_dict), strict=False)
+
+        elif(large):
             self.model = BertModel.from_pretrained('bert-large-uncased', cache_dir=temp_dir)
         else:
             self.model = BertModel.from_pretrained('bert-base-uncased', cache_dir=temp_dir)
@@ -137,16 +153,23 @@ class ExtSummarizer(nn.Module):
         super(ExtSummarizer, self).__init__()
         self.args = args
         self.device = device
-        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert)
 
+        # print('HERE1')
+        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert, args.from_pretrained)
+        # print('HERE2')
         self.ext_layer = ExtTransformerEncoder(self.bert.model.config.hidden_size, args.ext_ff_size, args.ext_heads,
                                                args.ext_dropout, args.ext_layers)
+
+        # print('HERE3')
+
         if (args.encoder == 'baseline'):
             bert_config = BertConfig(self.bert.model.config.vocab_size, hidden_size=args.ext_hidden_size,
                                      num_hidden_layers=args.ext_layers, num_attention_heads=args.ext_heads, intermediate_size=args.ext_ff_size)
             self.bert.model = BertModel(bert_config)
             self.ext_layer = Classifier(self.bert.model.config.hidden_size)
 
+        print(args.max_pos, self.bert.model.config.hidden_size)
+        print(self.bert.model.embeddings.position_embeddings.weight.data.size())
         if(args.max_pos>512):
             my_pos_embeddings = nn.Embedding(args.max_pos, self.bert.model.config.hidden_size)
             my_pos_embeddings.weight.data[:512] = self.bert.model.embeddings.position_embeddings.weight.data
@@ -155,7 +178,8 @@ class ExtSummarizer(nn.Module):
 
 
         if checkpoint is not None:
-            self.load_state_dict(checkpoint['model'], strict=False)
+            self.load_state_dict(checkpoint['model'] if 'model' in checkpoint else checkpoint, strict=False)
+
         else:
             if args.param_init != 0.0:
                 for p in self.ext_layer.parameters():
@@ -180,7 +204,7 @@ class AbsSummarizer(nn.Module):
         super(AbsSummarizer, self).__init__()
         self.args = args
         self.device = device
-        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert)
+        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert, args.from_pretrained)
 
         if bert_from_extractive is not None:
             self.bert.model.load_state_dict(
