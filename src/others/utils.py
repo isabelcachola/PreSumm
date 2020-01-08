@@ -3,7 +3,7 @@ import re
 import shutil
 import time
 
-from others import pyrouge
+import pyrouge
 
 REMAP = {"-lrb-": "(", "-rrb-": ")", "-lcb-": "{", "-rcb-": "}",
          "-lsb-": "[", "-rsb-": "]", "``": '"', "''": '"'}
@@ -36,7 +36,7 @@ def process(params):
             with open(tmp_dir + "/reference/ref.{}.txt".format(i), "w",
                       encoding="utf-8") as f:
                 f.write(references[i])
-        r = pyrouge.Rouge155(temp_dir=temp_dir)
+        r = pyrouge.Rouge155()
         r.model_dir = tmp_dir + "/reference/"
         r.system_dir = tmp_dir + "/candidate/"
         r.model_filename_pattern = 'ref.#ID#.txt'
@@ -76,7 +76,7 @@ def test_rouge(temp_dir, cand, ref):
             with open(tmp_dir + "/reference/ref.{}.txt".format(i), "w",
                       encoding="utf-8") as f:
                 f.write(references[i])
-        r = pyrouge.Rouge155(temp_dir=temp_dir)
+        r = pyrouge.Rouge155()
         r.model_dir = tmp_dir + "/reference/"
         r.system_dir = tmp_dir + "/candidate/"
         r.model_filename_pattern = 'ref.#ID#.txt'

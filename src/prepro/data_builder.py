@@ -13,12 +13,12 @@ from os.path import join as pjoin
 import torch
 from multiprocess import Pool
 
-from others.logging import logger
-from others.tokenization import BertTokenizer
+from ..others.logging import logger
+from ..others.tokenization import BertTokenizer
 from pytorch_transformers import XLNetTokenizer
 
-from others.utils import clean
-from prepro.utils import _get_word_ngrams
+from ..others.utils import clean
+from ..prepro.utils import _get_word_ngrams
 
 import xml.etree.ElementTree as ET
 
@@ -329,16 +329,29 @@ def _format_to_bert(params):
 
 
 def format_to_lines(args):
+    # print(args.tldr)
     corpus_mapping = {}
     for corpus_type in ['valid', 'test', 'train']:
         temp = []
         for line in open(pjoin(args.map_path, 'mapping_' + corpus_type + '.txt')):
-            temp.append(hashhex(line.strip()))
-        corpus_mapping[corpus_type] = {key.strip(): 1 for key in temp}
+            if args.tldr:
+                if line != '\n':
+                    # print(line)
+                    temp.append(line.strip())
+            else:
+                temp.append(hashhex(line.strip()))
+        if args.tldr:
+            corpus_mapping[corpus_type] = temp 
+        else:  
+            corpus_mapping[corpus_type] = {key.strip(): 1 for key in temp}
+    
+    # print(corpus_mapping['valid'])
     train_files, valid_files, test_files = [], [], []
     for f in glob.glob(pjoin(args.raw_path, '*.json')):
         real_name = f.split('/')[-1].split('.')[0]
+        # print(real_name, f)
         if (real_name in corpus_mapping['valid']):
+            # print('here')
             valid_files.append(f)
         elif (real_name in corpus_mapping['test']):
             test_files.append(f)
@@ -353,6 +366,7 @@ def format_to_lines(args):
         pool = Pool(args.n_cpus)
         dataset = []
         p_ct = 0
+        # print('here')
         for d in pool.imap_unordered(_format_to_lines, a_lst):
             dataset.append(d)
             if (len(dataset) > args.shard_size):
@@ -367,8 +381,10 @@ def format_to_lines(args):
         pool.join()
         if (len(dataset) > 0):
             pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
+            print(pt_file)
             with open(pt_file, 'w') as save:
                 # save.write('\n'.join(dataset))
+                # print('here')
                 save.write(json.dumps(dataset))
                 p_ct += 1
                 dataset = []
@@ -376,8 +392,9 @@ def format_to_lines(args):
 
 def _format_to_lines(params):
     f, args = params
-    print(f)
+    # print(f)
     source, tgt = load_json(f, args.lower)
+    # print({'src': source, 'tgt': tgt})
     return {'src': source, 'tgt': tgt}
 
 

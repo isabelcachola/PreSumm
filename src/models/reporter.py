@@ -6,8 +6,8 @@ import time
 import math
 import sys
 
-from distributed import all_gather_list
-from others.logging import logger
+from ..distributed import all_gather_list
+from ..others.logging import logger
 
 
 def build_report_manager(opt):

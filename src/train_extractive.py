@@ -13,12 +13,12 @@ import time
 
 import torch
 
-import distributed
-from models import data_loader, model_builder
-from models.data_loader import load_dataset
-from models.model_builder import ExtSummarizer
-from models.trainer_ext import build_trainer
-from others.logging import logger, init_logger
+from .distributed import multi_init
+from .models import data_loader, model_builder
+from .models.data_loader import load_dataset
+from .models.model_builder import ExtSummarizer
+from .models.trainer_ext import build_trainer
+from .others.logging import logger, init_logger
 
 model_flags = ['hidden_size', 'ff_size', 'heads', 'inter_layers', 'encoder', 'ff_actv', 'use_interval', 'rnn_size']
 
@@ -52,7 +52,7 @@ def run(args, device_id, error_queue):
     setattr(args, 'gpu_ranks', [int(i) for i in args.gpu_ranks])
 
     try:
-        gpu_rank = distributed.multi_init(device_id, args.world_size, args.gpu_ranks)
+        gpu_rank = multi_init(device_id, args.world_size, args.gpu_ranks)
         print('gpu_rank %d' % gpu_rank)
         if gpu_rank != args.gpu_ranks[device_id]:
             raise AssertionError("An error occurred in \

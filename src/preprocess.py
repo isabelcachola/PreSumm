@@ -1,12 +1,9 @@
 #encoding=utf-8
-
-
 import argparse
 import time
 
-from others.logging import init_logger
-from prepro import data_builder
-
+from .others.logging import init_logger
+from .prepro import data_builder
 
 def do_format_to_lines(args):
     print(time.clock())
@@ -18,12 +15,11 @@ def do_format_to_bert(args):
     data_builder.format_to_bert(args)
     print(time.clock())
 
-
-
 def do_format_xsum_to_lines(args):
     print(time.clock())
     data_builder.format_xsum_to_lines(args)
     print(time.clock())
+
 
 def do_tokenize(args):
     print(time.clock())
@@ -40,15 +36,15 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-if __name__ == '__main__':
+def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("-pretrained_model", default='bert', type=str)
 
     parser.add_argument("-mode", default='', type=str)
     parser.add_argument("-select_mode", default='greedy', type=str)
-    parser.add_argument("-map_path", default='../../data/')
-    parser.add_argument("-raw_path", default='../../line_data')
-    parser.add_argument("-save_path", default='../../data/')
+    parser.add_argument("-map_path", default='data/')
+    parser.add_argument("-raw_path", default='line_data')
+    parser.add_argument("-save_path", default='data/')
 
     parser.add_argument("-shard_size", default=2000, type=int)
     parser.add_argument('-min_src_nsents', default=3, type=int)
@@ -61,13 +57,18 @@ if __name__ == '__main__':
     parser.add_argument("-lower", type=str2bool, nargs='?',const=True,default=True)
     parser.add_argument("-use_bert_basic_tokenizer", type=str2bool, nargs='?',const=True,default=False)
 
-    parser.add_argument('-log_file', default='../../logs/cnndm.log')
+    parser.add_argument('-log_file', default='logs/cnndm.log')
 
     parser.add_argument('-dataset', default='')
 
     parser.add_argument('-n_cpus', default=2, type=int)
+    parser.add_argument('-tldr', action='store_true', default=False, dest='tldr')
 
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     init_logger(args.log_file)
-    eval('data_builder.'+args.mode + '(args)')
+    eval('data_builder.'+ args.mode + '(args)')
+
+if __name__ == "__main__":
+    import sys
+    main(sys.argv[1:])

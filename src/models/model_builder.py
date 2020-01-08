@@ -5,9 +5,9 @@ import torch.nn as nn
 from pytorch_transformers import BertModel, BertConfig
 from torch.nn.init import xavier_uniform_
 
-from models.decoder import TransformerDecoder
-from models.encoder import Classifier, ExtTransformerEncoder
-from models.optimizers import Optimizer
+from .decoder import TransformerDecoder
+from .encoder import Classifier, ExtTransformerEncoder
+from .optimizers import Optimizer
 
 def build_optim(args, model, checkpoint):
     """ Build optimizer """

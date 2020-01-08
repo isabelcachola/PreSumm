@@ -5,7 +5,7 @@ import random
 
 import torch
 
-from others.logging import logger
+from ..others.logging import logger
 
 
 
