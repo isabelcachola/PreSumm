@@ -5,13 +5,14 @@
 
 
 from __future__ import print_function
+# from __future__ import absolute_import
 
 import math
 import pickle
 
 import torch.distributed
 
-from .others.logging import logger
+from others.logging import logger
 
 
 def is_master(gpu_ranks, device_id):

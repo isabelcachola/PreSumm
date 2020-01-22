@@ -153,7 +153,7 @@ class ExtSummarizer(nn.Module):
         self.device = device
 
         # print('HERE1')
-        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert, args.from_pretrained)
+        self.bert = Bert(args.large, args.temp_dir, args.finetune_bert)
         # print('HERE2')
         self.ext_layer = ExtTransformerEncoder(self.bert.model.config.hidden_size, args.ext_ff_size, args.ext_heads,
                                                args.ext_dropout, args.ext_layers)

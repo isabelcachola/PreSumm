@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import bisect
 import gc
 import glob
@@ -5,9 +7,7 @@ import random
 
 import torch
 
-from ..others.logging import logger
-
-
+from others.logging import logger
 
 class Batch(object):
     def _pad(self, data, pad_id, width=-1):

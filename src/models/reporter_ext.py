@@ -1,12 +1,12 @@
 """ Report manager utility """
 from __future__ import print_function
+# from __future__ import absolute_import
 
 import sys
 import time
 from datetime import datetime
 
-from ..others.logging import logger
-
+from others.logging import logger
 
 def build_report_manager(opt):
     if opt.tensorboard:
