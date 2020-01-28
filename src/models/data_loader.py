@@ -187,6 +187,7 @@ class DataIterator(object):
         return xs
 
     def preprocess(self, ex, is_test):
+        src_id = ex['id']
         src = ex['src']
         tgt = ex['tgt'][:self.args.max_tgt_len][:-1]+[2]
         src_sent_labels = ex['src_sent_labels']
@@ -208,7 +209,7 @@ class DataIterator(object):
 
 
         if(is_test):
-            return src, tgt, segs, clss, src_sent_labels, src_txt, tgt_txt
+            return src_id, src, tgt, segs, clss, src_sent_labels, src_txt, tgt_txt
         else:
             return src, tgt, segs, clss, src_sent_labels
 
