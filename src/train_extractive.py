@@ -239,13 +239,10 @@ def train_single_ext(args, device_id):
     def train_iter_fct():
         return data_loader.Dataloader(args, load_dataset(args, 'train', shuffle=True), args.batch_size, device,
                                       shuffle=True, is_test=False)
-    # print('here2')
     model = ExtSummarizer(args, device, checkpoint)
     optim = model_builder.build_optim(args, model, checkpoint)
 
-    # print('here')
     logger.info(model)
 
-    # print('here')
     trainer = build_trainer(args, device_id, model, optim)
     trainer.train(train_iter_fct, args.train_steps)

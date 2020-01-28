@@ -346,7 +346,6 @@ def format_to_lines(args):
     train_files, valid_files, test_files = [], [], []
     for f in glob.glob(pjoin(args.raw_path, '*.json')):
         real_name = f.split('/')[-1].split('.')[0]
-        # print(real_name, f)
         if (real_name in corpus_mapping['valid']):
             valid_files.append(f)
         elif (real_name in corpus_mapping['test']):
@@ -355,7 +354,6 @@ def format_to_lines(args):
             train_files.append(f)
         # else:
         #     train_files.append(f)
-    # print(test_files)
 
     corpora = {'train': train_files, 'valid': valid_files, 'test': test_files}
     for corpus_type in ['train', 'valid', 'test']:
@@ -363,15 +361,11 @@ def format_to_lines(args):
         pool = Pool(args.n_cpus)
         dataset = []
         p_ct = 0
-        # print(a_lst)
         for d in pool.imap_unordered(_format_to_lines, a_lst):
             dataset.append(d)
             if (len(dataset) > args.shard_size):
                 pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
                 with open(pt_file, 'w') as save:
-                    # save.write('\n'.join(dataset))
-                    # print('here')
-                    # print(dataset)
                     save.write(json.dumps(dataset))
                     p_ct += 1
                     dataset = []
@@ -381,8 +375,6 @@ def format_to_lines(args):
         if (len(dataset) > 0):
             pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
             with open(pt_file, 'w') as save:
-                print(pt_file)
-                print(dataset)
                 save.write(json.dumps(dataset))
                 p_ct += 1
                 dataset = []
@@ -392,9 +384,7 @@ def _format_to_lines(params):
     f, args = params
     real_name = f.split('/')[-1].split('.')[0]
     source, tgt = load_json(f, args.lower)
-    # print('HERE')
-    # print({'src': source, 'tgt': tgt, 'id':real_name})
-    return {'src': source, 'tgt': tgt, 'id':real_name}
+    return {'src': source, 'tgt': tgt, 'id': real_name}
 
 
 
@@ -411,7 +401,6 @@ def format_xsum_to_lines(args):
         mapped_fnames = corpus_mapping[corpus_type]
         root_src = pjoin(args.raw_path, 'restbody')
         root_tgt = pjoin(args.raw_path, 'firstsentence')
-        # realnames = [fname.split('.')[0] for fname in os.listdir(root_src)]
         realnames = mapped_fnames
 
         a_lst = [(root_src, root_tgt, n) for n in realnames]
