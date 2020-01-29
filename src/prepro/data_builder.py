@@ -13,12 +13,12 @@ from os.path import join as pjoin
 import torch
 from multiprocess import Pool
 
-from ..others.logging import logger
-from ..others.tokenization import BertTokenizer
+from others.logging import logger
+from others.tokenization import BertTokenizer
 from pytorch_transformers import XLNetTokenizer
 
-from ..others.utils import clean
-from ..prepro.utils import _get_word_ngrams
+from others.utils import clean
+from prepro.utils import _get_word_ngrams
 
 import xml.etree.ElementTree as ET
 
@@ -208,7 +208,6 @@ class BertData():
     def __init__(self, args):
         self.args = args
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-
         self.sep_token = '[SEP]'
         self.cls_token = '[CLS]'
         self.pad_token = '[PAD]'
@@ -282,7 +281,7 @@ def format_to_bert(args):
         for json_f in glob.glob(pjoin(args.raw_path, '*' + corpus_type + '.*.json')):
             real_name = json_f.split('/')[-1]
             a_lst.append((corpus_type, json_f, args, pjoin(args.save_path, real_name.replace('json', 'bert.pt'))))
-        print(a_lst)
+        # print(a_lst)
         pool = Pool(args.n_cpus)
         for d in pool.imap(_format_to_bert, a_lst):
             pass
@@ -299,12 +298,11 @@ def _format_to_bert(params):
         return
 
     bert = BertData(args)
-
     logger.info('Processing %s' % json_file)
     jobs = json.load(open(json_file))
     datasets = []
     for d in jobs:
-        source, tgt = d['src'], d['tgt']
+        source, tgt, paper_id = d['src'], d['tgt'], d['id']
 
         sent_labels = greedy_selection(source[:args.max_src_nsents], tgt, 3)
         if (args.lower):
@@ -317,7 +315,7 @@ def _format_to_bert(params):
         if (b_data is None):
             continue
         src_subtoken_idxs, sent_labels, tgt_subtoken_idxs, segments_ids, cls_ids, src_txt, tgt_txt = b_data
-        b_data_dict = {"src": src_subtoken_idxs, "tgt": tgt_subtoken_idxs,
+        b_data_dict = {"id": paper_id, "src": src_subtoken_idxs, "tgt": tgt_subtoken_idxs,
                        "src_sent_labels": sent_labels, "segs": segments_ids, 'clss': cls_ids,
                        'src_txt': src_txt, "tgt_txt": tgt_txt}
         datasets.append(b_data_dict)
@@ -336,7 +334,6 @@ def format_to_lines(args):
         for line in open(pjoin(args.map_path, 'mapping_' + corpus_type + '.txt')):
             if args.tldr:
                 if line != '\n':
-                    # print(line)
                     temp.append(line.strip())
             else:
                 temp.append(hashhex(line.strip()))
@@ -349,9 +346,7 @@ def format_to_lines(args):
     train_files, valid_files, test_files = [], [], []
     for f in glob.glob(pjoin(args.raw_path, '*.json')):
         real_name = f.split('/')[-1].split('.')[0]
-        # print(real_name, f)
         if (real_name in corpus_mapping['valid']):
-            # print('here')
             valid_files.append(f)
         elif (real_name in corpus_mapping['test']):
             test_files.append(f)
@@ -366,13 +361,11 @@ def format_to_lines(args):
         pool = Pool(args.n_cpus)
         dataset = []
         p_ct = 0
-        # print('here')
         for d in pool.imap_unordered(_format_to_lines, a_lst):
             dataset.append(d)
             if (len(dataset) > args.shard_size):
                 pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
                 with open(pt_file, 'w') as save:
-                    # save.write('\n'.join(dataset))
                     save.write(json.dumps(dataset))
                     p_ct += 1
                     dataset = []
@@ -381,10 +374,7 @@ def format_to_lines(args):
         pool.join()
         if (len(dataset) > 0):
             pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
-            print(pt_file)
             with open(pt_file, 'w') as save:
-                # save.write('\n'.join(dataset))
-                # print('here')
                 save.write(json.dumps(dataset))
                 p_ct += 1
                 dataset = []
@@ -392,10 +382,9 @@ def format_to_lines(args):
 
 def _format_to_lines(params):
     f, args = params
-    # print(f)
+    real_name = f.split('/')[-1].split('.')[0]
     source, tgt = load_json(f, args.lower)
-    # print({'src': source, 'tgt': tgt})
-    return {'src': source, 'tgt': tgt}
+    return {'src': source, 'tgt': tgt, 'id': real_name}
 
 
 
@@ -412,7 +401,6 @@ def format_xsum_to_lines(args):
         mapped_fnames = corpus_mapping[corpus_type]
         root_src = pjoin(args.raw_path, 'restbody')
         root_tgt = pjoin(args.raw_path, 'firstsentence')
-        # realnames = [fname.split('.')[0] for fname in os.listdir(root_src)]
         realnames = mapped_fnames
 
         a_lst = [(root_src, root_tgt, n) for n in realnames]

@@ -52,9 +52,11 @@ class Batch(object):
 
 
             if (is_test):
-                src_str = [x[-2] for x in data]
+                src_id = [x[-1] for x in data]
+                setattr(self, 'src_id', src_id)
+                src_str = [x[-3] for x in data]
                 setattr(self, 'src_str', src_str)
-                tgt_str = [x[-1] for x in data]
+                tgt_str = [x[-2] for x in data]
                 setattr(self, 'tgt_str', tgt_str)
 
     def __len__(self):
@@ -77,6 +79,7 @@ def load_dataset(args, corpus_type, shuffle):
 
     def _lazy_dataset_loader(pt_file, corpus_type):
         dataset = torch.load(pt_file)
+        print(f'{pt_file} == {dataset}')
         logger.info('Loading %s dataset from %s, number of examples: %d' %
                     (corpus_type, pt_file, len(dataset)))
         return dataset
@@ -186,12 +189,8 @@ class DataIterator(object):
         xs = self.dataset
         return xs
 
-
-
-
-
-
     def preprocess(self, ex, is_test):
+        src_id = ex['id']
         src = ex['src']
         tgt = ex['tgt'][:self.args.max_tgt_len][:-1]+[2]
         src_sent_labels = ex['src_sent_labels']
@@ -213,7 +212,7 @@ class DataIterator(object):
 
 
         if(is_test):
-            return src, tgt, segs, clss, src_sent_labels, src_txt, tgt_txt
+            return src, tgt, segs, clss, src_sent_labels, src_txt, tgt_txt, src_id
         else:
             return src, tgt, segs, clss, src_sent_labels
 

@@ -301,10 +301,10 @@ class Trainer(object):
                                 candidate = batch.src_str[i][j].strip()
                                 _pred.append(candidate)
 
-                                if ((not cal_oracle) and (not self.args.recall_eval) and len(_pred) == 3):
+                                if ((not cal_oracle) and (not self.args.recall_eval) and len(_pred) == self.args.num_sentns):
                                     break
 
-                            _pred = '<q>'.join(_pred)
+                            _pred = ' '.join(_pred)
                             if(self.args.recall_eval):
                                 _pred = ' '.join(_pred.split()[:len(batch.tgt_str[i].split())])
 
