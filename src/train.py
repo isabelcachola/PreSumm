@@ -91,7 +91,6 @@ def main(args):
     parser.add_argument("-train_steps", default=1000, type=int)
     parser.add_argument("-recall_eval", type=str2bool, nargs='?',const=True,default=False)
 
-
     parser.add_argument('-visible_gpus', default='-1', type=str)
     parser.add_argument('-gpu_ranks', default='0', type=str)
     parser.add_argument('-log_file', default='../logs/cnndm.log')

@@ -152,13 +152,9 @@ class ExtSummarizer(nn.Module):
         self.args = args
         self.device = device
 
-        # print('HERE1')
         self.bert = Bert(args.large, args.temp_dir, args.finetune_bert)
-        # print('HERE2')
         self.ext_layer = ExtTransformerEncoder(self.bert.model.config.hidden_size, args.ext_ff_size, args.ext_heads,
                                                args.ext_dropout, args.ext_layers)
-
-        # print('HERE3')
 
         if (args.encoder == 'baseline'):
             bert_config = BertConfig(self.bert.model.config.vocab_size, hidden_size=args.ext_hidden_size,
@@ -166,8 +162,8 @@ class ExtSummarizer(nn.Module):
             self.bert.model = BertModel(bert_config)
             self.ext_layer = Classifier(self.bert.model.config.hidden_size)
 
-        print(args.max_pos, self.bert.model.config.hidden_size)
-        print(self.bert.model.embeddings.position_embeddings.weight.data.size())
+        # print(args.max_pos, self.bert.model.config.hidden_size)
+        # print(self.bert.model.embeddings.position_embeddings.weight.data.size())
         if(args.max_pos>512):
             my_pos_embeddings = nn.Embedding(args.max_pos, self.bert.model.config.hidden_size)
             my_pos_embeddings.weight.data[:512] = self.bert.model.embeddings.position_embeddings.weight.data

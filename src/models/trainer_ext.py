@@ -258,6 +258,7 @@ class Trainer(object):
                             sent_scores = sent_scores + mask.float()
                             sent_scores = sent_scores.cpu().data.numpy()
                             selected_ids = np.argsort(-sent_scores, 1)
+
                         # selected_ids = np.sort(selected_ids,1)
                         for i, idx in enumerate(selected_ids):
                             _pred = []
@@ -276,7 +277,7 @@ class Trainer(object):
                                 if ((not cal_oracle) and (not self.args.recall_eval) and len(_pred) == self.args.num_sents):
                                     break
 
-                            _pred = '<q>'.join(_pred)
+                            _pred = ' '.join(_pred)
                             if (self.args.recall_eval):
                                 _pred = ' '.join(_pred.split()[:len(batch.tgt_str[i].split())])
 
