@@ -183,14 +183,14 @@ class ExtSummarizer(nn.Module):
         self.to(device)
 
     def forward(self, src, segs, clss, mask_src, mask_cls):
-        print('src', src.size(), src)
+        # print('src', src.size(), src)
         top_vec = self.bert(src, segs, mask_src)
-        print('top vec', top_vec.size(), top_vec)
+        # print('top vec', top_vec.size(), top_vec)
         sents_vec = top_vec[torch.arange(top_vec.size(0)).unsqueeze(1), clss]
         sents_vec = sents_vec * mask_cls[:, :, None].float()
-        print('sents vec', sents_vec)
+        # print('sents vec', sents_vec)
         sent_scores = self.ext_layer(sents_vec, mask_cls).squeeze(-1)
-        print('sent scores', sent_scores)
+        # print('sent scores', sent_scores)
         return sent_scores, mask_cls
 
 

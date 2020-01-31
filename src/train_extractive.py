@@ -135,7 +135,7 @@ def validate_ext(args, device_id):
                 if (time_of_cp > timestep):
                     timestep = time_of_cp
                     step = int(cp.split('.')[-2].split('_')[-1])
-                    print('validating')
+                    # print('validating')
                     validate(args, device_id, cp, step)
                     test_ext(args, device_id, cp, step)
 
