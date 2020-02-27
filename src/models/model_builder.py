@@ -9,6 +9,13 @@ from .decoder import TransformerDecoder
 from .encoder import Classifier, ExtTransformerEncoder
 from .optimizers import Optimizer
 
+from transformers import (
+    GPT2Config,
+    GPT2LMHeadModel,
+    GPT2Tokenizer,
+)
+
+
 def build_optim(args, model, checkpoint):
     """ Build optimizer """
 
@@ -226,10 +233,19 @@ class AbsSummarizer(nn.Module):
         if (self.args.share_emb):
             tgt_embeddings.weight = copy.deepcopy(self.bert.model.embeddings.word_embeddings.weight)
 
-        self.decoder = TransformerDecoder(
-            self.args.dec_layers,
-            self.args.dec_hidden_size, heads=self.args.dec_heads,
-            d_ff=self.args.dec_ff_size, dropout=self.args.dec_dropout, embeddings=tgt_embeddings)
+        # self.decoder = TransformerDecoder(
+        #     self.args.dec_layers,
+        #     self.args.dec_hidden_size, 
+        #     heads=self.args.dec_heads,
+        #     d_ff=self.args.dec_ff_size, 
+        #     dropout=self.args.dec_dropout, 
+        #     embeddings=tgt_embeddings)
+        decoder_config = GPT2Config.from_pretrained(args.model_name_or_path, cache_dir=args.cache_dir)
+        self.decoder = GPT2LMHeadModel.from_pretrained('gpt2',
+                                                        config=decoder_config)
+
+        # tokenizer = GPT2LMHeadModel.from_pretrained(args.gpt2_path)
+        self.decoder.to(device)
 
         self.generator = get_generator(self.vocab_size, self.args.dec_hidden_size, device)
         self.generator[0].weight = self.decoder.embeddings.weight

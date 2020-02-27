@@ -162,6 +162,8 @@ class TransformerDecoder(nn.Module):
         src_batch, src_len = src_words.size()
         tgt_batch, tgt_len = tgt_words.size()
 
+        print(f'src_batch: {src_batch}\tsrc_len: {src_len}')
+
         # Run the forward pass of the TransformerDecoder.
         # emb = self.embeddings(tgt, step=step)
         emb = self.embeddings(tgt)
