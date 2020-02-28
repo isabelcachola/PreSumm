@@ -293,9 +293,9 @@ def format_to_bert(args):
 def _format_to_bert(params):
     corpus_type, json_file, args, save_file = params
     is_test = corpus_type == 'test'
-    if (os.path.exists(save_file)):
-        logger.info('Ignore %s' % save_file)
-        return
+    # if (os.path.exists(save_file)):
+    #     logger.info('Ignore %s' % save_file)
+    #     return
 
     bert = BertData(args)
     logger.info('Processing %s' % json_file)
